@@ -35,3 +35,6 @@ def check_overdue_loans():
             recipient_list=[member_email],
             fail_silently=False,
         )
+
+    """If I had a little bit more time I would have fifnished all of the tasks and fixed the bugs. 
+    """
