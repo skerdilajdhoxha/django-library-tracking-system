@@ -1,6 +1,10 @@
 import os
 from pathlib import Path
+from celery.schedules import crontab
 from dotenv import load_dotenv
+
+from library.tasks import check_overdue_loans
+
 
 load_dotenv()
 
@@ -115,3 +119,17 @@ CELERY_RESULT_SERIALIZER = 'json'
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'admin@library.com')
+
+
+CELERY_BEAT_SCHEDULE = {
+    "sample_task": {
+        "task": "library.tasks.check_overdue_loans",
+        "schedule": crontab(hours="1"),
+    },
+}
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 100
+}

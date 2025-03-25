@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5436:5436"
 
   redis:
     image: redis:6
@@ -19,11 +19,11 @@ services:
 
   web:
     build: .
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8008"
     volumes:
       - .:/code
     ports:
-      - "8000:8000"
+      - "8000:8008"
     env_file:
       - .env
     depends_on:
@@ -40,6 +40,18 @@ services:
     depends_on:
       - web
       - redis
+
+    celery-beat:
+      build: .
+      command: celery -A library_system beat -l info
+      volumes:
+        - .:/code
+      environment:
+        - DEBUG=1
+        - SECRET_KEY=dbaa1_i7%*3r9-=z-+_mz4r-!qeed@(-a_rnhjkfewjhf8ds
+        - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      depends_on:
+        - redis
 
 volumes:
   postgres_data:

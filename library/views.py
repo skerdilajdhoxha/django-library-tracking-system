@@ -11,8 +11,12 @@ class AuthorViewSet(viewsets.ModelViewSet):
     serializer_class = AuthorSerializer
 
 class BookViewSet(viewsets.ModelViewSet):
-    queryset = Book.objects.all()
+    # queryset = Book.objects.all()
     serializer_class = BookSerializer
+    
+    def get_queryset(self):
+        # New optimized queryset to avoid N+1 queries
+        return Book.objects.select_related('author').all()
 
     @action(detail=True, methods=['post'])
     def loan(self, request, pk=None):
@@ -52,3 +56,20 @@ class MemberViewSet(viewsets.ModelViewSet):
 class LoanViewSet(viewsets.ModelViewSet):
     queryset = Loan.objects.all()
     serializer_class = LoanSerializer
+    
+    @action(detail=True, methods=['post'])
+    def extend_due_date(self, request, pk=None):
+        loan = self.get_object()
+        additional_days = request.data.get('additional_days')
+        
+        if additional_days < 1:
+            return Response({'error': 'Additional days must be greater than 0.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        loan.due_date += timezone.timedelta(days=additional_days)
+        loan.save()
+        return Response(loan, status=status.HTTP_200_OK)
+        
+        
+        
+        
+        
